@@ -52,7 +52,7 @@ func (w *worker) work() {
 		// 等待安排工作
 		case j := <-w.jobs: // 来工作立即开工
 			j.do(j.params)
-		case <-time.After(20 * time.Second): // 20秒没工作后，工人自动离职
+		case <-time.After(10 * time.Second): // 10秒没工作后，工人自动离职
 			w.wantToTravel <- true
 			isBreak = true
 		}
@@ -111,7 +111,7 @@ func (h *hr) findWorker() *worker {
 	return nil
 }
 
-// 招工
+// 招工(先从内容招，如果没有，再重新创建一个)
 func (h *hr) employee() *worker {
 	var w *worker
 	// 如果满员且都在工作，则等待，直到有空闲的工人为止
@@ -127,7 +127,8 @@ func (h *hr) employee() *worker {
 				h.m.Unlock()
 				return w
 			}
+			// 此处必须稍作停顿，否则容易出现循环不止，消耗系统资源
+			time.Sleep(time.Millisecond)
 		}
 	}
-	return nil
 }
