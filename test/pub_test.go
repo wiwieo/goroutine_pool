@@ -10,8 +10,11 @@ func Benchmark_Pool(b *testing.B) {
 	b.SetParallelism(pool.FACTORY_SCALE)
 	f := pool.Open()
 	for i := 0; i < b.N; i++ {
-		f.Recent("测试", func(id ...interface{}) {
+		rst := make(chan interface{}, 1)
+		f.Recent("测试", func(id ...interface{}) interface{} {
 			fmt.Println(id)
-		}, i)
+			return id
+		}, rst, i)
+		fmt.Println("返回结果：", <-rst)
 	}
 }

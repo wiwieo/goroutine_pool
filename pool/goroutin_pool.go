@@ -11,9 +11,10 @@ const (
 
 // 任务
 type job struct {
-	desc   string               // 工作描述
-	do     func(...interface{}) // 工作
-	params []interface{}        // 材料
+	desc   string                           // 工作描述
+	do     func(...interface{}) interface{} // 工作
+	params []interface{}                    // 材料
+	result chan interface{}
 }
 
 type human struct {
@@ -51,7 +52,8 @@ func (w *worker) work() {
 		select {
 		// 等待安排工作
 		case j := <-w.jobs: // 来工作立即开工
-			j.do(j.params)
+			rst := j.do(j.params)
+			j.result <- rst
 		case <-time.After(10 * time.Second): // 10秒没工作后，工人自动离职
 			w.wantToTravel <- true
 			isBreak = true
@@ -87,7 +89,7 @@ func Open() *factory {
 }
 
 // 接单
-func (f *factory) Recent(name string, do func(...interface{}), params ...interface{}) {
+func (f *factory) Recent(name string, do func(...interface{}) interface{}, result chan interface{}, params ...interface{}) {
 	go func() {
 		w := f.h.employee()
 		w.busy = true
@@ -96,13 +98,14 @@ func (f *factory) Recent(name string, do func(...interface{}), params ...interfa
 		w.jobs <- job{
 			do:     do,
 			params: params,
+			result: result,
 		}
 		f.h.workers[w.id].busy = false
 	}()
 }
 
 // 找空闲的工人
-func (h *hr) findWorker() *worker {
+func (h *hr) findWorker(			) *worker {
 	for _, w := range h.workers {
 		if w != nil && !w.busy {
 			return w
