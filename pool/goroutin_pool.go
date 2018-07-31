@@ -105,7 +105,7 @@ func (f *factory) Recent(name string, do func(...interface{}) interface{}, resul
 }
 
 // 找空闲的工人
-func (h *hr) findWorker(			) *worker {
+func (h *hr) findWorker() *worker {
 	for _, w := range h.workers {
 		if w != nil && !w.busy {
 			return w
