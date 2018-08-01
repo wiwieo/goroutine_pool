@@ -11,7 +11,7 @@ const (
 
 var (
 	workerCount             = 0
-	addToPool   chan worker = make(chan worker, 1)
+	addToPool   chan worker = make(chan worker, FACTORY_SCALE)
 )
 
 // 任务
@@ -48,7 +48,7 @@ func (w *worker) work() {
 				j.result <- rst
 			}
 			addToPool <- *w
-		case <-time.After(2 * time.Second):
+		case <-time.After(10 * time.Second):
 			fmt.Println("超时了")
 		}
 	}()

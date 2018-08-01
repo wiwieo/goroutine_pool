@@ -52,7 +52,7 @@ func (w *worker) work() {
 		select {
 		// 等待安排工作
 		case j := <-w.jobs: // 来工作立即开工
-			rst := j.do(j.params)
+			rst := j.do(j.params...)
 			j.result <- rst
 		case <-time.After(10 * time.Second): // 10秒没工作后，工人自动离职
 			w.wantToTravel <- true

@@ -11,17 +11,24 @@ import (
 	"testing"
 )
 
-func Benchmark_Pool(b *testing.B) {
+func Benchmark_Pool_Result(b *testing.B) {
 	b.SetParallelism(pool.FACTORY_SCALE)
 	f := pool.Open()
 	for i := 0; i < b.N; i++ {
 		rst := make(chan interface{}, 1)
-		f.Recent("测试", func(id ...interface{}) interface{} {
-			fmt.Println(id)
-			return id
-		}, rst, i)
+		f.Recent("测试", add, rst, i, i + 1)
 		fmt.Println("返回结果：", <-rst)
 	}
+}
+
+func Benchmark_Pool(b *testing.B) {
+	b.SetParallelism(pool.FACTORY_SCALE)
+	f := pool.Open()
+
+	for i := 0; i < b.N; i++ {
+		f.Recent("测试", add, nil, i, i + 1)
+	}
+	//Profile()
 }
 
 func Benchmark_Pool_New_Result(b *testing.B) {
